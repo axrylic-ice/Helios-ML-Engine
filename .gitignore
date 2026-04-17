@@ -1,0 +1,10 @@
+etc/
+include/
+lib/
+share/
+.vscode/
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
