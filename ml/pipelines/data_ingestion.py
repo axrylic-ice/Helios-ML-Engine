@@ -170,10 +170,10 @@ def run_ingestion():
     for f in files:
         if  'polymarket' in f or 'bayse' in f:
             process_polymarket(f)
-        elif 'official' in f or 'brent' in f:
-            process_fx_rates(f)
         elif 'unofficial' in f:
             process_unofficial_fx(f)
+        elif 'official' in f or 'brent' in f:
+            process_fx_rates(f)
         elif 'macro' in f:
             process_macro_data(f)
         elif 'GDELT' in f:
