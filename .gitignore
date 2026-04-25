@@ -1,0 +1,13 @@
+etc/
+include/
+lib/
+share/
+.vscode/
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+extras/
+check_setup.py
+prediction_sentiment_aggregate.py
