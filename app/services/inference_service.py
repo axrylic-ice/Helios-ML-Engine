@@ -1,22 +1,20 @@
-import joblib
-import pandas as pd
+import random
 from app.services.feature_builder import build_features
 from app.services.decision_engine import make_decision
 
-MODEL_PATH = "ml/registry/latest_model.pkl"
-
-model = joblib.load(MODEL_PATH)
-
 def run_inference():
+
+    # Step 1: Build features
     features = build_features()
 
-    df = pd.DataFrame([features])
+    # Step 2: MOCK MODEL OUTPUT (replace later with real ML model)
+    probability = random.uniform(0.5, 0.9)
 
-    prob = model.predict_proba(df)[0][1]
-
-    decision = make_decision(prob, features)
+    # Step 3: Decision logic
+    decision = make_decision(probability, features)
 
     return {
-        "probability": float(prob),
-        **decision
+        "fx_spike_probability": round(probability, 3),
+        "features": features,
+        "decision": decision
     }
