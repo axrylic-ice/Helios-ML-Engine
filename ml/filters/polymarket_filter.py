@@ -6,7 +6,7 @@ def filter_polymarket(data):
 
     cleaned = []
 
-    # 🔧 handle response shape properly
+    #  handle response shape properly
     if isinstance(data, list):
         events = data
     elif isinstance(data, dict):
@@ -17,17 +17,12 @@ def filter_polymarket(data):
     for event in events:
 
         # 🔧 safer probability extraction (Gamma is inconsistent)
-        prob = (
-            event.get("probability")
-            or (event.get("outcomePrices")[0] if event.get("outcomePrices") else None)
-            or event.get("yesPrice")
-        )
 
         cleaned.append({
-            "prob": prob,
+            "prob": event.get("probability")[0],
             "volume": event.get("volume", 0),
             "category": event.get("category"),
-            "title": event.get("question") or event.get("title")
+            "title":  event.get("market")
         })
 
     return cleaned
