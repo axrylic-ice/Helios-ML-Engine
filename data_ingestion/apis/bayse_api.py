@@ -34,20 +34,3 @@ def get_bayse_events():
         "events": all_events
     }
     
-def filter_bayse(events):
-
-    cleaned = []
-
-    for e in events["events"]:
-
-        for m in e.get("markets", []):
-
-            cleaned.append({
-                "prob": m["outcome1Price"],
-                "liquidity": e.get("liquidity", 0),
-                "category": e.get("category"),
-                "title": e.get("title"),
-                "timestamp": e.get("createdAt")
-            })
-
-    return cleaned
