@@ -6,7 +6,6 @@ def filter_eia(data):
     """
 
     return {
-        "oil_price": data.get("price"),
-        "inventory_change": data.get("inventory"),
+        "oil_price": data.get("brent_price"),
         "timestamp": data.get("timestamp")
     }
