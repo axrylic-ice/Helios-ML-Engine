@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from app.services.inference_service import run_inference
+from scripts.run_inference import LiveFXSystem
 
 router = APIRouter()
 
@@ -7,6 +8,9 @@ router = APIRouter()
 def health():
     return {"service": "ok"}
 
-@router.get("/predict")
-def predict():
-    return run_inference()
+system = LiveFXSystem()
+
+@app.get("/fx/decision")
+def get_decision():
+    result = system.step()
+    return result
