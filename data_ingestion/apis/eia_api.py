@@ -8,7 +8,7 @@ def get_oil_data():
 
     # --- FIX 1: define time range ---
     end = datetime.utcnow().date()
-    start = end - timedelta(days=7)
+    start = end - timedelta(days=14)
 
     params = {
         "api_key": API_KEY,
