@@ -13,14 +13,33 @@ def aggregate_news(news_list):
 
     results = sent_model(texts)
 
-    scores = []
+    scored = []
 
-    for r in results:
+    for i, r in enumerate(results):
+
         if r["label"] == "positive":
-            scores.append(r["score"])
+            score = r["score"]
         elif r["label"] == "negative":
-            scores.append(-r["score"])
+            score = -r["score"]
         else:
-            scores.append(0)
+            score = 0
 
-    return float(np.mean(scores))
+        scored.append({
+            "text": texts[i],
+            "label": r["label"],
+            "score": float(score),
+            "confidence": float(r["score"])
+        })
+
+    # main aggregated sentiment (UNCHANGED LOGIC)
+    avg_score = float(np.mean([x["score"] for x in scored]))
+
+    # top 3 by absolute confidence
+    top3 = sorted(
+        scored,
+        key=lambda x: x["confidence"],
+        reverse=True
+    )[:3]
+    print(top3)
+
+    return avg_score
