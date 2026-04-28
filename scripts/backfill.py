@@ -1,14 +1,37 @@
-import numpy as np
+import pandas as pd
+from ml.db.store import FeatureStore
 
-def create_sequences(X, y, window=7):
 
-    X_seq, y_seq = [], []
+class BackfillDB:
 
-    for i in range(len(X) - window - 7):
+    def __init__(self):
+        self.store = FeatureStore()
 
-        X_seq.append(X.iloc[i:i+window].values)
+    def run(self, df: pd.DataFrame):
 
-        # predict future devaluation
-        y_seq.append(y.iloc[i + window + 7])
+        df = df.sort_values("Timestamp").reset_index(drop=True)
 
-    return np.array(X_seq), np.array(y_seq)
+        for _, row in df.iterrows():
+
+            features = {
+                "PPoly": row["PPoly"],
+                "PBayse": row["PBayse"],
+                "SNews": row["SNews"],
+
+                "XOfficial": row["XOfficial"],
+                "XParallel": row["XParallel"],
+                "XSpread": row["XSpread"],
+
+                "OBrent": row["OBrent"],
+
+                "MGDP": row["MGDP"],
+                "MCPI": row["MCPI"],
+                "MRes": row["MRes"],
+                "MDebt": row["MDebt"],
+            }
+
+            target = int(row["y_up"]) if "y_up" in row else None
+
+            self.store.save_row(features, target)
+
+        print("✅ BACKFILL COMPLETE (RAW → DB FEATURE STORE)")
