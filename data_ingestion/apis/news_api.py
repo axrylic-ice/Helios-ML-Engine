@@ -20,6 +20,8 @@ def get_news(query="naira OR forex OR inflation"):
         {
             "title": a["title"],
             "source": a["source"]["name"],
+            "description": a["description"],
+            "url": a["url"],
             "published": a["publishedAt"]
         }
         for a in articles[:10]
