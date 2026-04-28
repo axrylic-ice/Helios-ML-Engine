@@ -31,7 +31,7 @@ class FXScaler:
         self.fit(df, cols)
         return self.transform(df)
 
-    def save(self, path="ml/models/weights/fx_scaler.pkl"):
+    def save(self, path="fx_scaler.pkl"):
         joblib.dump({
             "scaler": self.scaler,
             "cols": self.numeric_cols

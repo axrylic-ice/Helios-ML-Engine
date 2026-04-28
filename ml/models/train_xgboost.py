@@ -101,7 +101,18 @@ class FXXGBoostModel:
         return {
             "prob_up": prob
         }
+    def evaluate(self, X_test, y_test):
+        preds = self.model.predict(X_test)
+        prob = self.model.predict_proba(X_test)[:, 1]
 
+        from sklearn.metrics import accuracy_score, roc_auc_score
+
+        acc = accuracy_score(y_test, preds)
+        auc = roc_auc_score(y_test, prob)
+
+        print(f"\n📊 [XGBOOST TEST]")
+        print(f"Accuracy: {acc:.4f}")
+        print(f"AUC: {auc:.4f}")
     # -----------------------------
     # SAVE / LOAD
     # -----------------------------

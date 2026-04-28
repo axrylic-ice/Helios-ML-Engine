@@ -8,7 +8,8 @@ class FXLSTMModel:
         self.time_steps = time_steps
         self.feature_dim = feature_dim
         self.model = self.build()
-
+    def build_input(self, data):
+        return np.array(data).reshape(1, self.time_steps, self.feature_dim)
     def build(self):
         model = tf.keras.Sequential([
             tf.keras.Input(shape=(self.time_steps, self.feature_dim)),
@@ -31,14 +32,51 @@ class FXLSTMModel:
 
         return np.array(Xs), np.array(ys)
 
-    def train(self, X, y):
+    def create_sequences(self, data):
+        import numpy as np
+
+        X = []
+
+        for i in range(len(data) - self.time_steps):
+            X.append(data[i:i + self.time_steps])
+
+        return np.array(X)
+    def train(self, data, y):
+
+        # 1. CREATE SEQUENCES (CRITICAL FIX)
+        X = self.create_sequences(data)
+
+        # 2. ALIGN TARGET
+        y = y[self.time_steps:]   # shift to match sequence windows
+
+        # 3. FINAL ALIGNMENT SAFETY
+        min_len = min(len(X), len(y))
+        X = X[:min_len]
+        y = y[:min_len]
+
+        # 4. TRAIN
         self.model.fit(
             X, y,
             epochs=15,
             batch_size=32,
-            validation_split=0.1,
+            validation_split=0.2,
             verbose=1
         )
+
+    def predict(self, sequence):
+        import numpy as np
+
+        seq = np.array(sequence)
+
+        # ✅ FIX: ensure 3D input
+        if len(seq.shape) == 2:
+            seq = seq.reshape(1, self.time_steps, self.feature_dim)
+
+        pred = self.model.predict(seq, verbose=0)
+
+        return {
+            "volatility": float(pred[0][0])
+        }
 
     def predict_all(self, X):
         return self.model.predict(X, verbose=0).flatten()

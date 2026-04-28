@@ -1,128 +1,195 @@
 import numpy as np
 import os
-from ml.models.scaler import FXScaler
+
+from sklearn.metrics import accuracy_score, roc_auc_score
+
 from ml.models.train_xgboost import FXXGBoostModel
 from ml.models.train_lstm import FXLSTMModel
 from ml.models.meta_learner import FXMetaLearner
+from ml.models.scaler import FXScaler
+from ml.models.calibrator import FXCalibrator
+from ml.pipelines.walk_forward import WalkForwardEngine
 
 
 class FXPipeline:
+
     def __init__(self):
+
         self.scaler = FXScaler()
         self.xgb = FXXGBoostModel()
         self.lstm = FXLSTMModel()
         self.meta = FXMetaLearner()
+        self.calibrator = FXCalibrator()
 
+        self.numeric_cols = [
+            "PPoly","PBayse","SNews","OBrent",
+            "XOfficial","XParallel","XSpread",
+            "MGDP","MCPI","MRes","MDebt"
+        ]
+
+    # -------------------------
+    # META EVALUATION
+    # -------------------------
+    def evaluate_meta(self, X, y):
+
+        prob = self.meta.model.predict_proba(X)[:, 1]
+        pred = (prob > 0.5).astype(int)
+
+        acc = accuracy_score(y, pred)
+        auc = roc_auc_score(y, prob)
+
+        print(f"[META ACC]: {acc:.4f}")
+        print(f"[META AUC]: {auc:.4f}")
+
+        return {"accuracy": acc, "auc": auc}
+
+    # -------------------------
+    # TRAINING
+    # -------------------------
     def train(self, df):
+
+        engine = WalkForwardEngine()
+
+        meta_X, meta_y = [], []
+
+        for tr_s, tr_e, te_s, te_e in engine.split(df):
+
+            train_df = df.iloc[tr_s:tr_e].copy()
+            test_df  = df.iloc[te_s:te_e].copy()
+
+            # ---------------- SCALE ----------------
+            self.scaler.fit(train_df, self.numeric_cols)
+
+            train_scaled = self.scaler.transform(train_df)
+            test_scaled  = self.scaler.transform(test_df)
+
+            train_scaled = train_scaled.replace([np.inf, -np.inf], 0)
+            test_scaled  = test_scaled.replace([np.inf, -np.inf], 0)
+
+            # ---------------- XGBOOST ----------------
+            self.xgb.train(train_scaled, "y_up")
+
+            xgb_prob = self.xgb.predict(test_scaled)["prob_up"]
+
+            # ---------------- LSTM ----------------
+            self.lstm.train(
+                train_scaled[self.numeric_cols].values,
+                train_df["XOfficial"].pct_change().fillna(0).values
+            )
+
+            seq_input = test_scaled[self.numeric_cols].values[-30:]
+            seq_input = seq_input.reshape(1, 30, len(self.numeric_cols))
+
+            lstm_pred = self.lstm.model.predict(seq_input, verbose=0)[0][0]
+
+            # ---------------- ALIGN META DATA ----------------
+            n = len(test_df)
+
+            xgb_feat = xgb_prob[-n:]
+            lstm_feat = np.repeat(lstm_pred, n)
+
+            poly = test_scaled["PPoly"].values[-n:]
+            bayse = test_scaled["PBayse"].values[-n:]
+            spread = test_scaled["XSpread"].values[-n:]
+
+            X_meta = np.column_stack([
+                xgb_feat,
+                lstm_feat,
+                poly,
+                bayse,
+                spread
+            ])
+
+            y_meta = test_df["y_up"].values[-n:]
+
+            meta_X.append(X_meta)
+            meta_y.append(y_meta)
+
+        # ---------------- FINAL STACK ----------------
+        X_meta = np.vstack(meta_X)
+        y_meta = np.concatenate(meta_y)
+
+        # ---------------- META TRAIN ----------------
+        self.meta.train(X_meta, y_meta)
+
+        # ---------------- CALIBRATION ----------------
+        raw_probs = self.meta.model.predict_proba(X_meta)[:, 1]
+        self.calibrator.fit(raw_probs, y_meta)
+
+        # ---------------- EVAL ----------------
+        metrics = self.evaluate_meta(X_meta, y_meta)
+
+        print(metrics)
+        print("✅ WALK-FORWARD TRAINING COMPLETE")
+
+    # -------------------------
+    # INFERENCE
+    # -------------------------
+    def run_inference(self, df):
+
+        df_scaled = self.scaler.transform(df)
+        df_scaled = df_scaled.replace([np.inf, -np.inf], 0)
+
+        # ---------------- XGBOOST ----------------
+        xgb_prob = self.xgb.predict(df_scaled)["prob_up"][-1]
+
+        # ---------------- LSTM ----------------
+        seq = df_scaled[self.numeric_cols].values[-30:]
+        seq = seq.reshape(1, 30, len(self.numeric_cols))
+
+        lstm_pred = float(self.lstm.model.predict(seq, verbose=0)[0][0])
+
+        # ---------------- RAW FEATURES ----------------
+        raw = np.array([
+            xgb_prob,
+            lstm_pred,
+            df_scaled["PPoly"].values[-1],
+            df_scaled["PBayse"].values[-1],
+            df_scaled["XSpread"].values[-1]
+        ]).reshape(1, -1)
+
+        # ---------------- META ----------------
+        prob = self.meta.model.predict_proba(raw)[:, 1][0]
+
+        # ---------------- CALIBRATION ----------------
+        prob = self.calibrator.transform(np.array([prob]))[0]
+
+        # ---------------- DECISION ----------------
+        if prob > 0.65:
+            action = "BUY FX"
+        elif prob < 0.4:
+            action = "WAIT"
+        else:
+            action = "HEDGE"
+
+        return {
+            "probability": float(prob),
+            "action": action
+        }
+
+    # -------------------------
+    # SAVE / LOAD
+    # -------------------------
+    def save_all(self):
 
         os.makedirs("models", exist_ok=True)
 
-        numeric_cols = [
-            "PPoly","PBayse","SNews","OBrent",
-            "XOfficial","XParallel","XSpread",
-            "MGDP","MCPI","MRes","MDebt"
-        ]
-
-        # SCALE
-        df_scaled = self.scaler.fit_transform(df, numeric_cols)
-        df_scaled = df_scaled.replace([np.inf, -np.inf], np.nan).fillna(0)
-
-        # -----------------------------
-        # XGBOOST
-        # -----------------------------
-        self.xgb.train(df_scaled, "y_up")
-        xgb_probs = self.xgb.predict(df_scaled)["prob_up"]
-
-        # -----------------------------
-        # LSTM (VOLATILITY)
-        # -----------------------------
-        returns = df_scaled["XOfficial"].pct_change().fillna(0)
-        vol = returns.rolling(10).std().fillna(0)
-
-        lstm_X, lstm_y = self.lstm.prepare_data(
-            df_scaled[numeric_cols].values, vol.values
-        )
-
-        self.lstm.train(lstm_X, lstm_y)
-
-        lstm_preds = self.lstm.predict_all(lstm_X)
-
-        # -----------------------------
-        # ALIGN ALL MODELS
-        # -----------------------------
-        offset = self.lstm.time_steps
-
-        xgb_aligned = xgb_probs[offset:]
-        raw_ppoly = df_scaled["PPoly"].values[offset:]
-        raw_pbayse = df_scaled["PBayse"].values[offset:]
-        raw_spread = df_scaled["XSpread"].values[offset:]
-        y_meta = df["y_up"].values[offset:]
-
-        lstm_aligned = lstm_preds
-
-        # -----------------------------
-        # META TRAINING DATA
-        # -----------------------------
-        X_meta = np.column_stack([
-            xgb_aligned,
-            raw_ppoly,
-            raw_pbayse,
-            raw_spread,
-            lstm_aligned
-        ])
-
-        self.meta.train(X_meta, y_meta)
-
-        # -----------------------------
-        # METRICS
-        # -----------------------------
-        self.evaluate(y_meta, X_meta)
-
-        print("✅ FULL TRAINING COMPLETE")
-
-    def evaluate(self, y_true, X_meta):
-        from sklearn.metrics import accuracy_score
-
-        preds = self.meta.model.predict(X_meta)
-        acc = accuracy_score(y_true, preds)
-
-        print(f"[META Accuracy]: {acc:.4f}")
-
-    def run_inference(self, df):
-
-        numeric_cols = [
-            "PPoly","PBayse","SNews","OBrent",
-            "XOfficial","XParallel","XSpread",
-            "MGDP","MCPI","MRes","MDebt"
-        ]
-
-        df_scaled = self.scaler.transform(df)
-        df_scaled = df_scaled.replace([np.inf, -np.inf], np.nan).fillna(0)
-
-        # XGB
-        xgb = self.xgb.predict(df_scaled)["prob_up"][-1]
-
-        # LSTM
-        seq = df_scaled[numeric_cols].values[-30:]
-        lstm = self.lstm.predict_single(seq)
-
-        # RAW
-        ppoly = df_scaled["PPoly"].values[-1]
-        pbayse = df_scaled["PBayse"].values[-1]
-        spread = df_scaled["XSpread"].values[-1]
-
-        X = np.array([[xgb, ppoly, pbayse, spread, lstm]])
-
-        return self.meta.predict_single(X)
-
-    def save_all(self):
         self.xgb.save()
         self.lstm.save()
         self.meta.save()
         self.scaler.save()
+        self.calibrator.save("models/calibrator.pkl")
 
+        print("✅ ALL MODELS SAVED")
+        
     def load_all(self):
+
+        os.makedirs("models", exist_ok=True)
+
         self.xgb.load()
         self.lstm.load()
         self.meta.load()
         self.scaler.load()
+        self.calibrator.load("models/calibrator.pkl")
+
+        print("✅ ALL MODELS SAVED")
