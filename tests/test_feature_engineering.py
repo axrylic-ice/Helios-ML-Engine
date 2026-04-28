@@ -23,3 +23,5 @@ def test_feature_engine():
     assert "PPoly" in features
     assert "SNews" in features
     assert features["XSpread"] == 200
+    
+test_feature_engine()

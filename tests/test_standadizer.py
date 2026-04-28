@@ -31,6 +31,7 @@ def test_standardizer():
 
         if s["signal_type"] == "probability":
             assert 0 <= s["value"] <= 1
+    print (signals[:5])
 
     print("\nSTANDARDIZER OK")
     
