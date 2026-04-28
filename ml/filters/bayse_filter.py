@@ -11,10 +11,10 @@ def filter_bayse(events):
             continue
 
         cleaned.append({
-            "prob": sum(probs) / len(probs),
-            "liquidity": e.get("liquidity", 0),
+            "prob": probs[0],
+            "volume": e.get("liquidity", 0),
             "category": e.get("category"),
-            "title": e.get("title"),
+            "title": e.get("description"),
         })
 
     return cleaned
