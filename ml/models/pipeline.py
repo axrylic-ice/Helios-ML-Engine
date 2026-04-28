@@ -161,11 +161,24 @@ class FXPipeline:
             action = "WAIT"
         else:
             action = "HEDGE"
+        edge = prob/lstm_pred if lstm_pred > 0 else 0
 
         return {
-            "probability": float(prob),
-            "action": action
-        }
+    "confidence": float(abs(edge)),
+    "decision": action,
+    "engine_health": "GOOD",
+
+    "estimated_devaluation": float(prob),
+    "volatility": float(lstm_pred),
+
+    "lstm_sequence": list(self.buffer)[-30:],
+
+    "raw": {
+        "xgb": float(xgb_prob),
+        "lstm": float(lstm_pred),
+        "meta": float(prob)
+    }
+}
 
     # -------------------------
     # SAVE / LOAD

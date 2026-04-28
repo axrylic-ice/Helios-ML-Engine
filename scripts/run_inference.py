@@ -1,13 +1,14 @@
 import pandas as pd
 import time
 
+from ml.models.interpreter import FXInterpreter
 from ml.pipelines.filter_pipeline import run_filter_pipeline
 from ml.pipelines.standardizer import standardize_all
 from ml.pipelines.feature_engineering import FeatureEngine
 from ml.models.pipeline import FXPipeline
 from scripts.run_training import seed_if_empty
 from ml.db.database import get_recent_features
-
+from nlp.sentiment import signals
 import os
 os.environ["TRANSFORMERS_NO_TF"] = "1"
 os.environ["USE_TF"] = "1"   # keep TF, but isolate it
@@ -91,6 +92,13 @@ class LiveFXSystem:
         # MODEL INFERENCE
         # -------------------------
         result = self.pipeline.run_inference(df)
+        interpreter = FXInterpreter()
+
+        final = interpreter.interpret(
+            model_out=result,
+            features=features,
+            signals=signals
+            )
 
         return result
 

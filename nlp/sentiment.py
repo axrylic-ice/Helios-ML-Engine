@@ -3,6 +3,8 @@ import numpy as np
 
 sent_model = pipeline("sentiment-analysis", model="ProsusAI/finbert")
 
+signals = []
+
 
 def aggregate_news(news_list):
 
@@ -24,22 +26,22 @@ def aggregate_news(news_list):
         else:
             score = 0
 
-        scored.append({
-            "text": texts[i],
-            "label": r["label"],
-            "score": float(score),
-            "confidence": float(r["score"])
-        })
+        scored.append(
+            {
+                "text": texts[i],
+                "label": r["label"],
+                "description": r["description"],
+                "score": float(score),
+                "confidence": float(r["score"]),
+            }
+        )
 
     # main aggregated sentiment (UNCHANGED LOGIC)
     avg_score = float(np.mean([x["score"] for x in scored]))
 
     # top 3 by absolute confidence
-    top3 = sorted(
-        scored,
-        key=lambda x: x["confidence"],
-        reverse=True
-    )[:3]
-    print(top3)
+    signals.extend(sorted(scored, key=lambda x: x["confidence"], reverse=True)[:3])
+    
+    print(signals)
 
     return avg_score
