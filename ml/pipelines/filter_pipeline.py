@@ -13,22 +13,28 @@ def run_filter_pipeline():
     raw = collect_all_data()
 
     filtered = {}
+    print ("bro")
 
     # --- Bayse ---
     filtered["bayse"] = filter_bayse(raw.get("bayse", {}))
-
+    print ("bro")
     # --- FX ---
     filtered["fx"] = filter_fx(raw.get("fx_global", {}))
+    print ("bro")
 
     # --- News ---
     filtered["news"] = filter_news(raw.get("news", []))
+    print ("bro")
 
     # placeholders (add later)
     filtered["polymarket"] = filter_polymarket(raw.get("polymarket"))
+    print ("bro")
     
     filtered["eia"] = filter_eia(raw.get("eia"))
+    print ("bro")
     
     filtered["nairatoday"] = get_nairatoday_rates()
+    print ("bro")
     
 
     return filtered

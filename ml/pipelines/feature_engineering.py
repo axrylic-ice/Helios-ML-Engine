@@ -1,65 +1,57 @@
 from ml.pipelines.market_aggregator import aggregate_market
 from nlp.sentiment import aggregate_news
+from datetime import datetime, timezone
 
 
 class FeatureEngine:
 
-    def __init__(self, signals):
-        self.signals = signals
+    def __init__(self, raw_data):
+        """
+        raw_data = {
+            "bayse": [...],
+            "polymarket": [...],
+            "fx": {...},
+            "nairatoday": {...},
+            "eia": {...},
+            "news": [...]
+        }
+        """
+        self.raw = raw_data or {}
 
     # -------------------------
-    # HELPERS (CRITICAL)
+    # HELPERS (RAW AWARE)
     # -------------------------
-    def _get(self, source, ctx_key=None, ctx_val=None):
-
-        results = []
-
-        for s in self.signals:
-            if s["source"] != source:
-                continue
-
-            if ctx_key:
-                if s.get("context", {}).get(ctx_key) != ctx_val:
-                    continue
-
-            results.append(s)
-
-        return results
+    def _safe_float(self, x, default=0.0):
+        try:
+            return float(x)
+        except:
+            return default
 
     # =========================
     # A. MARKET EXPECTATIONS
     # =========================
     def market_expectations(self):
 
-        poly = self._get("polymarket")
-        bayse = self._get("bayse")
+        poly_events = []
+        for e in self.raw.get("polymarket", []):
+                poly_events.append({
+                    "title": e.get("title"),
+                    "probability": self._safe_float(e.get("prob")),
+                    "volume": self._safe_float(e.get("volume", 1))
+                })
 
-        poly_events = [
-            {
-                "title": s["context"].get("title"),
-                "probability": s["value"],
-                "volume": s["context"].get("volume", 1)
-            }
-            for s in poly
-        ]
-
-        bayse_events = [
-            {
-                "title": s["context"].get("title"),
-                "probability": s["value"],
-                "volume": s["context"].get("volume", 1)
-            }
-            for s in bayse
-        ]
-
-        ppoly = aggregate_market(poly_events)
-        pbayse = aggregate_market(bayse_events)
+        bayse_events = []
+        for e in self.raw.get("bayse", []):
+      
+                bayse_events.append({
+                    "title": e.get("title"),
+                    "probability": self._safe_float(e.get("prob")),
+                    "volume": self._safe_float(e.get("volume", 1))
+                })
 
         return {
-            "PPoly": ppoly,
-            "PBayse": pbayse,
-            "divergence": ppoly - pbayse,
-            "avg_expectation": (ppoly + pbayse) / 2
+            "PPoly": aggregate_market(poly_events) if poly_events else 0,
+            "PBayse": aggregate_market(bayse_events) if bayse_events else 0
         }
 
     # =========================
@@ -67,17 +59,14 @@ class FeatureEngine:
     # =========================
     def sentiment(self):
 
-        news = self._get("news")
-
         news_list = [
-            {"title": s["context"].get("title")}
-            for s in news
+            {"title": n.get("title"),"source": n.get("source"),"description": n.get("description"),"url": n.get("url"),}
+            for n in self.raw.get("news", [])
+            if n.get("title")
         ]
 
-        snews = aggregate_news(news_list)
-
         return {
-            "SNews": snews
+            "SNews": aggregate_news(news_list) if news_list else 0
         }
 
     # =========================
@@ -85,66 +74,51 @@ class FeatureEngine:
     # =========================
     def fx_structure(self):
 
-        official = self._get("fx", "type", "official")
-        parallel = self._get("naira", "type", "parallel")
+        fx = self.raw.get("fx", {})
+        naira = self.raw.get("nairatoday", {})
 
-        x_off = official[0]["value"] if official else 0
-        x_par = parallel[0]["value"] if parallel else 0
-
-        spread = x_par - x_off
-        stress = x_par / x_off if x_off != 0 else 0
+        x_off = self._safe_float(fx.get("USD_NGN"))
+        x_par = self._safe_float(naira.get("usd_ngn"))
 
         return {
             "XOfficial": x_off,
             "XParallel": x_par,
-            "XSpread": spread,
-            "FXStress": stress
+            "XSpread": x_par - x_off
         }
 
     # =========================
-    # D. MACRO
+    # D. MACRO (still stubbed)
     # =========================
     def macro(self):
 
-        mgdp = 3.2
-        mcpi = [20, 25]
-        mres = 50
-        mdebt = 100
-
-        inflation_shock = mcpi[-1] - mcpi[-2]
-        reserve_stress = mdebt / mres if mres != 0 else 0
-
         return {
-            "MGDP": mgdp,
-            "inflation_shock": inflation_shock,
-            "reserve_stress": reserve_stress
+            "MGDP": 3.2,
+            "MCPI": 22.5,
+            "MRes": 50,
+            "MDebt": 100
         }
 
     # =========================
-    # E. COMMODITY
+    # E. COMMODITY (EIA)
     # =========================
     def commodity(self):
 
-        oil = self._get("eia")
-
-        obr = oil[0]["value"] if oil else 0
+        eia = self.raw.get("eia", {})
+        oil_price = self._safe_float(eia.get("oil_price"))
 
         return {
-            "OBrent": obr,
-            "oil_pressure": (80 - obr) / 80
+            "OBrent": oil_price,
         }
 
     # =========================
-    # FINAL
+    # FINAL PIPELINE
     # =========================
     def build(self):
 
-        features = {}
-
-        features.update(self.market_expectations())
-        features.update(self.sentiment())
-        features.update(self.fx_structure())
-        features.update(self.macro())
-        features.update(self.commodity())
-
-        return features
+        return {
+            **self.market_expectations(),
+            **self.sentiment(),
+            **self.fx_structure(),
+            **self.macro(),
+            **self.commodity()
+        }
