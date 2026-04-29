@@ -59,11 +59,25 @@ class FeatureEngine:
     # =========================
     def sentiment(self):
 
-        news_list = [
-            {"title": n.get("title"),"source": n.get("source"),"description": n.get("description"),"url": n.get("url"),}
-            for n in self.raw.get("news", [])
-            if n.get("title")
-        ]
+      for n in self.raw.get("news", []):
+
+        title = n.get("title")
+        news_list = []
+
+        # skip empty/garbage titles
+        if len(title.strip()) < 5:
+          continue
+        
+        if n.get("description"):
+          print(n.get("description"))
+
+        news_list.append({
+            "title": title,
+            "source": n.get("source"),
+            "description": n.get("description"),
+            "url": n.get("url")
+        })
+        print("passed")
 
         return {
             "SNews": aggregate_news(news_list) if news_list else 0

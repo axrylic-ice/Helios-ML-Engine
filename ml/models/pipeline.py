@@ -171,8 +171,6 @@ class FXPipeline:
     "estimated_devaluation": float(prob),
     "volatility": float(lstm_pred),
 
-    "lstm_sequence": list(self.buffer)[-30:],
-
     "raw": {
         "xgb": float(xgb_prob),
         "lstm": float(lstm_pred),
@@ -203,6 +201,6 @@ class FXPipeline:
         self.lstm.load()
         self.meta.load()
         self.scaler.load()
-        self.calibrator.load("models/calibrator.pkl")
+        self.calibrator.load()
 
         print("✅ ALL MODELS SAVED")

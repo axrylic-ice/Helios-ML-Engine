@@ -3,15 +3,16 @@ import numpy as np
 
 sent_model = pipeline("sentiment-analysis", model="ProsusAI/finbert")
 
+# internal store (top signals only)
 signals = []
 
 
 def aggregate_news(news_list):
 
     if not news_list:
-        return 0
+        return 0.0
 
-    texts = [n["title"] for n in news_list]
+    texts = [n.get("title", "") for n in news_list]
 
     results = sent_model(texts)
 
@@ -19,29 +20,43 @@ def aggregate_news(news_list):
 
     for i, r in enumerate(results):
 
-        if r["label"] == "positive":
+        label = r["label"].lower()
+
+        if label == "positive":
             score = r["score"]
-        elif r["label"] == "negative":
+        elif label == "negative":
             score = -r["score"]
         else:
-            score = 0
+            score = 0.0
 
-        scored.append(
-            {
-                "text": texts[i],
-                "label": r["label"],
-                "description": r["description"],
-                "score": float(score),
-                "confidence": float(r["score"]),
-            }
-        )
+        item = {
+            "text": texts[i],
+            "label": r["label"],
+            "score": float(score),
+            "confidence": float(r["score"]),
 
-    # main aggregated sentiment (UNCHANGED LOGIC)
+            # ✅ correctly preserved metadata from input
+            "description": news_list[i].get("description"),
+            "source": news_list[i].get("source"),
+            "url": news_list[i].get("url"),
+        }
+
+        scored.append(item)
+
+    # -------------------------
+    # aggregate sentiment
+    # -------------------------
     avg_score = float(np.mean([x["score"] for x in scored]))
 
-    # top 3 by absolute confidence
-    signals.extend(sorted(scored, key=lambda x: x["confidence"], reverse=True)[:3])
-    
-    print(signals)
+    # -------------------------
+    # store TOP signals only
+    # -------------------------
+    top_signals = sorted(
+        scored,
+        key=lambda x: abs(x["confidence"]),
+        reverse=True
+    )[:3]
+
+    signals.extend(top_signals)
 
     return avg_score

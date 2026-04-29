@@ -22,7 +22,6 @@ class LiveFXSystem:
         self.pipeline.load_all()
 
         self.window_size = window_size
-        self.buffer = pd.DataFrame()
 
     # -------------------------
     # FETCH + PROCESS SIGNALS

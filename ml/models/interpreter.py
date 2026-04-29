@@ -88,7 +88,6 @@ class FXInterpreter:
             "liquidity_level": liquidity,
             "usd_flow": usd_flow,
 
-            "lstm_sequence": model_out["lstm_sequence"],
             "polymarket_sentiment": features["PPoly"],
 
             "x": {
