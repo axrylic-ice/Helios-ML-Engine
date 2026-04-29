@@ -1,30 +1,50 @@
-# --- CORE API ---
-fastapi==0.115.0
-uvicorn==0.34.0
-pydantic==2.12.0
-python-dotenv==1.0.1
+# -------------------------
+# CORE API
+# -------------------------
+fastapi==0.136.1
+uvicorn==0.46.0
+pydantic==2.12.3
+python-dotenv==1.2.2
 
-# --- DATA ---
-pandas==2.3.3
+# -------------------------
+# DATA STACK
+# -------------------------
+pandas==2.2.2
 numpy==1.26.4
 requests==2.32.5
 httpx==0.28.1
-beautifulsoup4==4.14.3
+beautifulsoup4==4.13.5
 
-# --- ML CORE ---
-scikit-learn==1.7.2
+# -------------------------
+# ML CORE
+# -------------------------
+scikit-learn==1.6.1
 xgboost==3.2.0
-joblib==1.5.2
+joblib==1.5.3
 optuna==4.2.0
 
-# --- NLP (SAFE STACK) ---
-transformers==4.41.1
-torch==2.2.2
-sentence-transformers==2.7.0
+# -------------------------
+# NLP / TRANSFORMERS
+# -------------------------
+transformers==5.0.0
+torch==2.10.0
+sentence-transformers==5.4.1
+tf-keras==2.20.0
 
-# --- STORAGE ---
-psycopg2-binary==2.9.10
+# -------------------------
+# OPTIONAL (ONLY IF USED)
+# -------------------------
+tensorflow==2.20.0
+tensorflow-probability==0.25.0
+
+# -------------------------
+# STORAGE
+# -------------------------
+psycopg2==2.9.12
 redis==5.2.0
 
-# --- OPTIONAL (ONLY IF NEEDED) ---
-tensorflow-cpu==2.16.1
+# -------------------------
+# UTILITIES
+# -------------------------
+tqdm==4.67.3
+joblib==1.5.3
