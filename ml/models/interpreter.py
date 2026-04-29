@@ -87,7 +87,6 @@ class FXInterpreter:
             "volatility_level": vol_level,
             "liquidity_level": liquidity,
             "usd_flow": usd_flow,
-
             "polymarket_sentiment": features["PPoly"],
 
             "x": {

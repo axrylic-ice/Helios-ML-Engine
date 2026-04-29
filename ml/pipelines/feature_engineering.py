@@ -34,20 +34,19 @@ class FeatureEngine:
 
         poly_events = []
         for e in self.raw.get("polymarket", []):
-                poly_events.append({
-                    "title": e.get("title"),
-                    "probability": self._safe_float(e.get("prob")),
-                    "volume": self._safe_float(e.get("volume", 1))
-                })
+            poly_events.append({
+                "title": e.get("title"),
+                "probability": self._safe_float(e.get("prob")),
+                "volume": self._safe_float(e.get("volume", 1))
+            })
 
         bayse_events = []
         for e in self.raw.get("bayse", []):
-      
-                bayse_events.append({
-                    "title": e.get("title"),
-                    "probability": self._safe_float(e.get("prob")),
-                    "volume": self._safe_float(e.get("volume", 1))
-                })
+            bayse_events.append({
+                "title": e.get("title"),
+                "probability": self._safe_float(e.get("prob")),
+                "volume": self._safe_float(e.get("volume", 1))
+            })
 
         return {
             "PPoly": aggregate_market(poly_events) if poly_events else 0,
@@ -59,29 +58,30 @@ class FeatureEngine:
     # =========================
     def sentiment(self):
 
-      for n in self.raw.get("news", []):
+        for n in self.raw.get("news", []):
 
-        title = n.get("title")
-        news_list = []
+            title = n.get("title")
+            news_list = []
 
-        # skip empty/garbage titles
-        if len(title.strip()) < 5:
-          continue
-        
-        if n.get("description"):
-          print(n.get("description"))
+            # skip empty/garbage titles
+            if len(title.strip()) < 5:
+                continue
 
-        news_list.append({
-            "title": title,
-            "source": n.get("source"),
-            "description": n.get("description"),
-            "url": n.get("url")
-        })
-        print("passed")
+            if n.get("description"):
+                print(n.get("description"))
 
-        return {
-            "SNews": aggregate_news(news_list) if news_list else 0
-        }
+            news_list.append({
+                "title": title,
+                "source": n.get("source"),
+                "description": n.get("description"),
+                "url": n.get("url")
+            })
+
+            print("passed")
+
+            return {
+                "SNews": aggregate_news(news_list) if news_list else 0
+            }
 
     # =========================
     # C. FX STRUCTURE
