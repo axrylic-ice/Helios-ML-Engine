@@ -40,7 +40,6 @@ class LiveFXSystem:
 
         # 3. Feature engineering
         engine = FeatureEngine(signals)
-        print ("jolly")
         features = engine.build()
         print ("jolly")
 
