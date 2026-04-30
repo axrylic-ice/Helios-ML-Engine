@@ -1,6 +1,11 @@
+from data_ingestion.apis.fixer_api import store
+
+
 class FXInterpreter:
 
     def interpret(self, model_out, features, signals):
+
+        from data_ingestion.apis.fixer_api import store
 
         # ----------------------------
         # VOLATILITY LEVEL
@@ -51,32 +56,49 @@ class FXInterpreter:
             for s in signals[:3]
         ]
 
-        # ----------------------------
-        # DECISION BASE SIGNAL SCORE (NEW CORE LOGIC)
-        # ----------------------------
-        estimated_devaluation = model_out.get("estimated_devaluation", 0)
+        # =========================================================
+        # CORE SIGNAL
+        # =========================================================
 
+        # ----------------------------
+        # EXPECTED DEVALUATION (%)  ✅ FIXED MEANING
+        # ----------------------------
+        base_move = vol * 100  # volatility → % move estimate
+
+        spread_factor = min(spread / 50, 2.0)
+
+        if liquidity == "HIGH":
+            liq_factor = 0.7
+        elif liquidity == "MEDIUM":
+            liq_factor = 1.0
+        else:
+            liq_factor = 1.3
+
+        estimated_devaluation = base_move * spread_factor * liq_factor
+
+        # direction (from model probability)
+        direction = model_out.get("direction", 0)  # assume -1, 0, +1 OR similar
+
+        # ----------------------------
+        # SCORE
+        # ----------------------------
         score = 0
 
-        # FX direction signal
-        if estimated_devaluation > 0:
+        if direction > 0:
             score += 1
-        elif estimated_devaluation < 0:
+        elif direction < 0:
             score -= 1
 
-        # USD flow signal
         if usd_flow == "INFLOW":
             score += 1
         elif usd_flow == "OUTFLOW":
             score -= 1
 
-        # Liquidity signal (risk adjustment)
         if liquidity == "HIGH":
             score += 1
         elif liquidity == "LOW":
             score -= 1
 
-        # Volatility penalty (risk, not engine health)
         if vol_level == "HIGH":
             score -= 1
 
@@ -96,20 +118,39 @@ class FXInterpreter:
             decision = "WAIT"
 
         # ----------------------------
-        # CONFIDENCE (REAL VERSION)
+        # CONFIDENCE (STABLE, NO 1.0 SATURATION)
         # ----------------------------
-        base_conf = model_out.get("confidence", 0)
+        base_conf = float(model_out.get("confidence", 0))
 
-        # normalize score influence into confidence boost
-        signal_strength = min(1.0, abs(score) / 3)
+        signal_votes = 0
 
-        confidence = (base_conf * 0.6) + (signal_strength * 0.4)
+        if direction > 0:
+            signal_votes += 1
+        elif direction < 0:
+            signal_votes -= 1
 
-        # volatility reduces confidence slightly (risk-based, not engine health)
+        if usd_flow == "INFLOW":
+            signal_votes += 1
+        elif usd_flow == "OUTFLOW":
+            signal_votes -= 1
+
+        if liquidity == "HIGH":
+            signal_votes += 1
+        elif liquidity == "LOW":
+            signal_votes -= 1
+
         if vol_level == "HIGH":
-            confidence *= 0.85
-        elif vol_level == "MEDIUM":
-            confidence *= 0.95
+            signal_votes -= 1
+
+        agreement = abs(signal_votes) / 3
+
+        confidence = (
+            base_conf * 0.5 +
+            agreement * 0.3 +
+            min(1.0, abs(estimated_devaluation) / 100) * 0.2
+        )
+
+        confidence = max(0.05, min(0.95, confidence))
 
         # ----------------------------
         # OUTPUT
@@ -118,7 +159,8 @@ class FXInterpreter:
             "confidence": confidence,
             "decision": decision,
 
-            "estimated_devaluation": estimated_devaluation,
+            "estimated_devaluation": estimated_devaluation,  # ✅ % MOVE ONLY
+
             "volatility_level": vol_level,
             "liquidity_level": liquidity,
             "usd_flow": usd_flow,
@@ -133,8 +175,8 @@ class FXInterpreter:
             "news": news_items,
 
             "fx_other_pairs": {
-                "EURNGN": features.get("XOfficial", 0) * 0.91,
-                "GBPNGN": features.get("XOfficial", 0) * 1.12,
-                "AUDNGN": features.get("XOfficial", 0) * 0.62
+                "EURNGN": store["EURNGN"],
+                "GBPNGN": store["GBPNGN"],
+                "AUDNGN": store["AUDNGN"]
             }
         }

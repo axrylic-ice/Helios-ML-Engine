@@ -6,6 +6,6 @@ def filter_fx(data):
     """
 
     return {
-        "USD_NGN": data["rates"].get("NGN"),
+        "USD_NGN": data["rates"],
         "timestamp": data.get("timestamp")
     }
