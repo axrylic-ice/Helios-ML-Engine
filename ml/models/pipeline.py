@@ -22,9 +22,17 @@ class FXPipeline:
         self.calibrator = FXCalibrator()
 
         self.numeric_cols = [
-            "PPoly","PBayse","SNews","OBrent",
-            "XOfficial","XParallel","XSpread",
-            "MGDP","MCPI","MRes","MDebt"
+            "PPoly",
+            "PBayse",
+            "SNews",
+            "OBrent",
+            "XOfficial",
+            "XParallel",
+            "XSpread",
+            "MGDP",
+            "MCPI",
+            "MRes",
+            "MDebt",
         ]
 
     # -------------------------
@@ -55,16 +63,16 @@ class FXPipeline:
         for tr_s, tr_e, te_s, te_e in engine.split(df):
 
             train_df = df.iloc[tr_s:tr_e].copy()
-            test_df  = df.iloc[te_s:te_e].copy()
+            test_df = df.iloc[te_s:te_e].copy()
 
             # ---------------- SCALE ----------------
             self.scaler.fit(train_df, self.numeric_cols)
 
             train_scaled = self.scaler.transform(train_df)
-            test_scaled  = self.scaler.transform(test_df)
+            test_scaled = self.scaler.transform(test_df)
 
             train_scaled = train_scaled.replace([np.inf, -np.inf], 0)
-            test_scaled  = test_scaled.replace([np.inf, -np.inf], 0)
+            test_scaled = test_scaled.replace([np.inf, -np.inf], 0)
 
             # ---------------- XGBOOST ----------------
             self.xgb.train(train_scaled, "y_up")
@@ -74,7 +82,7 @@ class FXPipeline:
             # ---------------- LSTM ----------------
             self.lstm.train(
                 train_scaled[self.numeric_cols].values,
-                train_df["XOfficial"].pct_change().fillna(0).values
+                train_df["XOfficial"].pct_change().fillna(0).values,
             )
 
             seq_input = test_scaled[self.numeric_cols].values[-30:]
@@ -92,13 +100,7 @@ class FXPipeline:
             bayse = test_scaled["PBayse"].values[-n:]
             spread = test_scaled["XSpread"].values[-n:]
 
-            X_meta = np.column_stack([
-                xgb_feat,
-                lstm_feat,
-                poly,
-                bayse,
-                spread
-            ])
+            X_meta = np.column_stack([xgb_feat, lstm_feat, poly, bayse, spread])
 
             y_meta = test_df["y_up"].values[-n:]
 
@@ -140,13 +142,15 @@ class FXPipeline:
         lstm_pred = float(self.lstm.model.predict(seq, verbose=0)[0][0])
 
         # ---------------- RAW FEATURES ----------------
-        raw = np.array([
-            xgb_prob,
-            lstm_pred,
-            df_scaled["PPoly"].values[-1],
-            df_scaled["PBayse"].values[-1],
-            df_scaled["XSpread"].values[-1]
-        ]).reshape(1, -1)
+        raw = np.array(
+            [
+                xgb_prob,
+                lstm_pred,
+                df_scaled["PPoly"].values[-1],
+                df_scaled["PBayse"].values[-1],
+                df_scaled["XSpread"].values[-1],
+            ]
+        ).reshape(1, -1)
 
         # ---------------- META ----------------
         prob = self.meta.model.predict_proba(raw)[:, 1][0]
@@ -161,22 +165,18 @@ class FXPipeline:
             action = "WAIT"
         else:
             action = "HEDGE"
-        edge = prob/lstm_pred if lstm_pred > 0 else 0
+        edge = prob / lstm_pred if lstm_pred > 0 else 0
 
         return {
-    "confidence": float(abs(edge)),
-    "decision": action,
-    "engine_health": "GOOD",
-
-    "estimated_devaluation": float(prob),
-    "volatility": float(lstm_pred),
-
-    "raw": {
-        "xgb": float(xgb_prob),
-        "lstm": float(lstm_pred),
-        "meta": float(prob)
-    }
-}
+            "confidence": float(abs(edge)),
+            "decision": action,
+            "engine_health": "GOOD",
+            "estimated_devaluation": float(prob),
+            "volatility": float(lstm_pred),
+                "xgb": float(xgb_prob),
+                "lstm": float(lstm_pred),
+                "meta": float(prob),
+        }
 
     # -------------------------
     # SAVE / LOAD
@@ -192,7 +192,7 @@ class FXPipeline:
         self.calibrator.save("models/calibrator.pkl")
 
         print("✅ ALL MODELS SAVED")
-        
+
     def load_all(self):
 
         os.makedirs("models", exist_ok=True)

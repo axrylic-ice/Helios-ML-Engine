@@ -99,7 +99,7 @@ class LiveFXSystem:
             signals=signals
             )
 
-        return result
+        return final
 
 
 # -------------------------
