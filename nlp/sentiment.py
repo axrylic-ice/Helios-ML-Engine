@@ -51,12 +51,11 @@ def aggregate_news(news_list):
     # -------------------------
     # store TOP signals only
     # -------------------------
-    top_signals = sorted(
+    signals.extend(sorted(
         scored,
         key=lambda x: abs(x["confidence"]),
         reverse=True
     )[:3]
-
-    signals.extend(top_signals)
+    )
 
     return avg_score

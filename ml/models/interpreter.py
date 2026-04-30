@@ -2,11 +2,11 @@ class FXInterpreter:
 
     def interpret(self, model_out, features, signals):
 
-        vol = model_out["volatility"]
-
         # ----------------------------
         # VOLATILITY LEVEL
         # ----------------------------
+        vol = model_out.get("volatility", 0)
+
         if vol > 0.05:
             vol_level = "HIGH"
         elif vol > 0.02:
@@ -15,12 +15,12 @@ class FXInterpreter:
             vol_level = "LOW"
 
         # ----------------------------
-        # LIQUIDITY (improved)
+        # LIQUIDITY
         # ----------------------------
-        spread = features["XSpread"]
-        poly = features["PPoly"]
+        spread = features.get("XSpread", 0)
+        poly = features.get("PPoly", 0)
 
-        if spread > 80 or poly < 0.3:
+        if spread > 80:
             liquidity = "LOW"
         elif spread > 30:
             liquidity = "MEDIUM"
@@ -28,7 +28,7 @@ class FXInterpreter:
             liquidity = "HIGH"
 
         # ----------------------------
-        # USD FLOW (improved)
+        # USD FLOW
         # ----------------------------
         if poly > 0.6 and spread < 30:
             usd_flow = "INFLOW"
@@ -38,68 +38,103 @@ class FXInterpreter:
             usd_flow = "NEUTRAL"
 
         # ----------------------------
-        # NEWS SCORING (FIXED)
+        # NEWS (already structured signals)
         # ----------------------------
-        impact_score = {"HIGH": 3, "MEDIUM": 2, "LOW": 1}
-
-        news_items = []
-
-        for s in signals:
-
-            title = (s.get("title") or "").lower()
-
-            score = 0
-            if "cbn" in title: score += 3
-            if "usd" in title: score += 1
-            if "inflation" in title: score += 2
-            if "rate" in title: score += 2
-
-            if score >= 4:
-                impact = "HIGH"
-            elif score >= 2:
-                impact = "MEDIUM"
-            else:
-                impact = "LOW"
-
-            news_items.append({
-                "headline": title,
-                "summary": title[:120],
-                "source": s.get("source_name"),
+        news_items = [
+            {
+                "headline": s.get("text"),
+                "description": s.get("description"),
+                "source": s.get("source"),
                 "url": s.get("url"),
-                "impact": impact
-            })
+                "impact": s.get("label")
+            }
+            for s in signals[:3]
+        ]
 
-        news_items = sorted(
-            news_items,
-            key=lambda x: impact_score[x["impact"]],
-            reverse=True
-        )
+        # ----------------------------
+        # DECISION BASE SIGNAL SCORE (NEW CORE LOGIC)
+        # ----------------------------
+        estimated_devaluation = model_out.get("estimated_devaluation", 0)
+
+        score = 0
+
+        # FX direction signal
+        if estimated_devaluation > 0:
+            score += 1
+        elif estimated_devaluation < 0:
+            score -= 1
+
+        # USD flow signal
+        if usd_flow == "INFLOW":
+            score += 1
+        elif usd_flow == "OUTFLOW":
+            score -= 1
+
+        # Liquidity signal (risk adjustment)
+        if liquidity == "HIGH":
+            score += 1
+        elif liquidity == "LOW":
+            score -= 1
+
+        # Volatility penalty (risk, not engine health)
+        if vol_level == "HIGH":
+            score -= 1
+
+        # ----------------------------
+        # DECISION
+        # ----------------------------
+        if model_out.get("confidence", 0) < 0.4:
+            decision = "WAIT"
+
+        elif score >= 2:
+            decision = "BUY_USD"
+
+        elif score <= -2:
+            decision = "SELL_USD"
+
+        else:
+            decision = "WAIT"
+
+        # ----------------------------
+        # CONFIDENCE (REAL VERSION)
+        # ----------------------------
+        base_conf = model_out.get("confidence", 0)
+
+        # normalize score influence into confidence boost
+        signal_strength = min(1.0, abs(score) / 3)
+
+        confidence = (base_conf * 0.6) + (signal_strength * 0.4)
+
+        # volatility reduces confidence slightly (risk-based, not engine health)
+        if vol_level == "HIGH":
+            confidence *= 0.85
+        elif vol_level == "MEDIUM":
+            confidence *= 0.95
 
         # ----------------------------
         # OUTPUT
         # ----------------------------
         return {
-            "confidence": model_out["confidence"],
-            "decision": model_out["decision"],
-            "engine_health": model_out["engine_health"],
+            "confidence": confidence,
+            "decision": decision,
 
-            "estimated_devaluation": model_out["estimated_devaluation"],
+            "estimated_devaluation": estimated_devaluation,
             "volatility_level": vol_level,
             "liquidity_level": liquidity,
             "usd_flow": usd_flow,
-            "polymarket_sentiment": features["PPoly"],
+            "polymarket_sentiment": poly,
 
             "x": {
-                "parallel": features["XParallel"],
-                "official": features["XOfficial"],
-                "spread": features["XSpread"]
+                "parallel": features.get("XParallel", 0),
+                "official": features.get("XOfficial", 0),
+                "spread": spread
             },
 
-            "news": news_items[:5],
+            "news": news_items,
 
             "fx_other_pairs": {
-                "EURNGN": features["XOfficial"] * 0.91,
-                "GBPNGN": features["XOfficial"] * 1.12,
-                "AUDNGN": features["XOfficial"] * 0.62
+                "EURNGN": features.get("XOfficial", 0) * 0.91,
+                "GBPNGN": features.get("XOfficial", 0) * 1.12,
+                "AUDNGN": features.get("XOfficial", 0) * 0.62
             }
         }
