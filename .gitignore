@@ -11,5 +11,4 @@ venv/
 extras/
 check_setup.py
 prediction_sentiment_aggregate.py
-*csv
 fx_store.db
