@@ -53,7 +53,7 @@ class FXInterpreter:
                 "url": s.get("url"),
                 "impact": s.get("label")
             }
-            for s in signals[:3]
+            for s in signals
         ]
 
         # =========================================================

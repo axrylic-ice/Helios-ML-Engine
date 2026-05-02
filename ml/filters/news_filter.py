@@ -1,7 +1,7 @@
 # ml/pipelines/filters/news_filter.py
 
 KEYWORDS = [
-    "inflation", "forex", "naira", "usd", "fuel", "energy", "subsidy", "exchange",
+    "inflation", "forex", "ngn", "usd", "fuel", "energy", "subsidy", "exchange",
     "cbn", "interest", "oil", "rate", "dollar"
 ]
 
