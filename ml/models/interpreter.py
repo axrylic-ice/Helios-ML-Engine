@@ -164,6 +164,7 @@ class FXInterpreter:
             "volatility_level": vol_level,
             "liquidity_level": liquidity,
             "usd_flow": usd_flow,
+            "engine_health": "good",
             "polymarket_sentiment": poly,
 
             "x": {
