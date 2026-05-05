@@ -1,11 +1,11 @@
 import pandas as pd
 import time
 
-from ml.models.interpreter import FXInterpreter
+from ml.pipelines.interpreter import FXInterpreter
 from ml.pipelines.filter_pipeline import run_filter_pipeline
 from ml.pipelines.standardizer import standardize_all
 from ml.pipelines.feature_engineering import FeatureEngine
-from ml.models.pipeline import FXPipeline
+from ml.pipelines.pipeline import FXPipeline
 from scripts.run_training import seed_if_empty
 from ml.db.database import get_recent_features
 from nlp.sentiment import signals

@@ -1,4 +1,4 @@
-from ml.pipelines.market_aggregator import aggregate_market
+from nlp.market_aggregator import aggregate_market
 from nlp.sentiment import aggregate_news
 from datetime import datetime, timezone
 

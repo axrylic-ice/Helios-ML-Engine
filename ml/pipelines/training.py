@@ -1,5 +1,5 @@
 import pandas as pd
-from ml.models.pipeline import FXPipeline
+from ml.pipelines.pipeline import FXPipeline
 
 df = pd.read_csv("ml/data/features/fx_data.csv")
 
