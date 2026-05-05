@@ -1,5 +1,6 @@
 <h1 align="center"> Fotuna FX Decision Intelligence Engine </h1>
-<p align="center"> An Enterprise-Grade Machine Learning Ecosystem for Predictive Forex Analytics and Automated Decision Synthesis </p>
+
+<p align="center"> High-performance ensemble machine learning architecture for multi-signal foreign exchange forecasting and macroeconomic decision intelligence. </p>
 
 <p align="center">
   <img alt="Build" src="https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge">
@@ -12,7 +13,8 @@
   You can generate your own at https://shields.io
 -->
 
-## 📑 Table of Contents
+## 📌 Table of Contents
+
 - [Overview](#-overview)
 - [Key Features](#-key-features)
 - [Tech Stack & Architecture](#-tech-stack--architecture)
@@ -27,139 +29,115 @@
 ## 🌟 Overview
 
 ### Hook
-Fotuna FX Decision Intelligence Engine is a sophisticated, multi-modal machine learning platform designed to synthesize disparate global macro signals into high-precision foreign exchange forecasts and actionable trading decisions.
+Fotuna FX Decision Intelligence Engine is a sophisticated, high-precision forecasting ecosystem that leverages multi-modal machine learning—integrating deep learning, gradient boosting, and sentiment analysis—to navigate the complexities of volatile currency markets with institutional-grade accuracy.
 
 ### The Problem
-> Global currency markets, particularly in emerging economies with dual-rate systems like the USD/NGN pair, are influenced by an overwhelming volume of fragmented data. Traditional analysis fails to account for the interplay between unofficial market scrapers, prediction market sentiment (Polymarket), energy sector fluctuations (EIA), and global news narratives simultaneously. This leads to information asymmetry, delayed responses to market shifts, and inconsistent decision-making in volatile environments.
+> Traditional foreign exchange analysis often relies on lagging indicators or siloed data streams, failing to account for the rapid interplay between official rates, parallel market fluctuations, global energy prices, and real-time news sentiment. For analysts and systems operating in high-volatility environments (such as the USD/NGN corridor), the lack of a unified, predictive engine that synthesizes macro-economic signals with micro-market sentiment leads to suboptimal decision-making and increased financial risk.
 
 ### The Solution
-Fotuna FX addresses these challenges by implementing a comprehensive "Intelligence-in-Depth" architecture. It automates the entire lifecycle of FX analysis—from scraping unofficial market rates and ingesting prediction market probabilities to sentiment analysis via NLP and ensemble modeling. By combining Long Short-Term Memory (LSTM) networks for sequence modeling and XGBoost for gradient-boosted decision trees, overseen by a specialized Meta-Learner, Fotuna provides a unified decision engine that outputs not just predictions, but calibrated trade signals and position-sizing logic.
+Fotuna FX eliminates fragmented analysis by providing a centralized Decision Intelligence Engine. By orchestrating a complex pipeline of data ingestion (from oil prices to prediction markets), sentiment extraction through NLP, and ensemble modeling (LSTM and XGBoost), Fotuna transforms raw macro-data into actionable insights. It automates the heavy lifting of feature engineering, standardization, and model calibration, allowing users to focus on strategic execution rather than data plumbing.
 
 ### Architecture Overview
-The system is built on a high-performance **Microservices** and **REST API** foundation. It leverages **FastAPI** for low-latency serving, **PyTorch** and **Transformers** for state-of-the-art NLP, and a robust data pipeline that handles everything from raw ingestion to standardized feature engineering. The backend is supported by **PostgreSQL** for relational feature storage and **Redis** for efficient data handling, all encapsulated within a **Docker** environment for seamless deployment.
+The system is built on a modular **Microservices-ready architecture** utilizing:
+- **RESTful API Layer**: Powered by **FastAPI** for high-concurrency inference and system health monitoring.
+- **Ensemble ML Core**: Utilizing **PyTorch** for sequential modeling (LSTM) and **XGBoost** for structural data analysis.
+- **Data Orchestration**: A robust pipeline featuring specialized filters (EIA, News, FX) and a centralized Feature Store.
+- **Persistence**: Hybrid storage using **PostgreSQL** for feature persistence and **Redis** for high-speed state management.
 
 ---
 
 ## ✨ Key Features
 
-### 🤖 Hybrid Machine Learning Ensemble
-*   **Sequential Intelligence (LSTM):** Captures time-series dependencies in FX fluctuations using the `FXLSTMModel`, allowing the system to understand historical momentum and cyclical patterns.
-*   **Gradient Boosted Precision (XGBoost):** Utilizes `FXXGBoostModel` to process structural features and non-linear relationships between macro-economic indicators.
-*   **Meta-Learner Synthesis:** The `FXMetaLearner` acts as the master arbiter, weighing inputs from multiple models to provide a final, high-confidence decision signal.
+### 🧠 Advanced Ensemble Modeling
+Fotuna doesn't rely on a single algorithm. It utilizes a dual-engine approach:
+- **LSTM (Long Short-Term Memory)**: Captures complex temporal dependencies and sequential patterns in FX historical data.
+- **XGBoost**: Processes tabular macro-economic features and structural market signals with high efficiency.
+- **FXMetaLearner**: An intelligent aggregator that builds high-level features to provide a final, calibrated decision.
 
-### 📡 Multi-Modal Data Ingestion & Scrapers
-*   **Automated Scrapers:** Dedicated `nairatoday_scraper` extracts real-world unofficial market rates, providing visibility into parallel market premiums.
-*   **Prediction Market Integration:** Direct connectors for **Polymarket** and **Bayse** APIs capture collective intelligence and crowd-sourced probabilities regarding economic events.
-*   **Macro-Economic Feeds:** Ingests critical energy data from the **EIA API** and official exchange rates via the **Fixer API**.
+### 📊 Real-Time Macro-Signal Integration
+Stay ahead of market shifts by automatically processing diverse external signals:
+- **Energy Intelligence**: Extracts oil and energy signals via the EIA filter to account for commodity-driven currency movements.
+- **Prediction Markets**: Integrates probability and volume signals from platforms like Polymarket to gauge market expectations.
+- **News Sentiment**: Leverages NLP transformers to convert global news streams into quantitative sentiment scores.
 
-### 🧠 Advanced NLP & Sentiment Analysis
-*   **Global News Processing:** Integrated News and GDELT 2.0 filters process thousands of headlines to extract macro-relevant sentiment.
-*   **Semantic Preprocessing:** Uses `transformers` and `sentence-transformers` to convert raw text into dense vector representations, enabling the model to "read" market anxiety or optimism.
+### 🛡️ Robust Data Engineering & Validation
+Ensures the highest data integrity through a rigorous pipeline:
+- **FXScaler**: Implements leak-proof scaling, fitting exclusively on training data to ensure valid backtesting.
+- **Walk-Forward Engine**: Simulates real-world conditions by testing models in sequential time windows.
+- **Standardization & Normalization**: Dedicated modules for cleaning and aligning heterogeneous data sources (Official vs. Unofficial FX rates, Bayse events, etc.).
 
-### 🏗️ Robust Engineering Pipeline
-*   **Feature Adapter & Builder:** Automatically transforms raw API responses into standardized model features through the `feature_builder` and `feature_adapter`.
-*   **Walk-Forward Validation:** Implements `WalkForwardEngine` for backtesting, ensuring that model performance is validated against time-accurate data splits without look-ahead bias.
-*   **Automated Normalization:** A specialized `Normalizer` suite ensures that oil prices, sentiment scores, and market probabilities are scaled correctly for neural network consumption.
-
-### ⚡ Enterprise Decision Engine
-*   **Actionable Outputs:** Beyond simple forecasting, the `DecisionEngine` provides logic for position sizing and trade execution based on model confidence and market volatility.
-*   **Inference Service:** A production-ready `inference_service` optimized for real-time application integration via FastAPI.
+### ⚡ Production-Ready Infrastructure
+- **FastAPI Core**: A high-performance gateway providing real-time access to model decisions and system status.
+- **Automated Schedulers**: Background jobs for continuous data collection and model retraining.
+- **Dockerized Deployment**: Consistent environment parity from development to production.
 
 ---
 
 ## 🛠️ Tech Stack & Architecture
 
-### Verified Technical Stack
-
 | Technology | Purpose | Why it was Chosen |
 | :--- | :--- | :--- |
-| **FastAPI** | Core API Framework | Provides high-performance, asynchronous endpoints for inference and system health monitoring. |
-| **PyTorch** | Deep Learning Framework | Powers the LSTM models and sentiment transformer architectures with GPU acceleration. |
-| **XGBoost** | Gradient Boosting | Handles structured feature data with extreme efficiency and handles missing values inherently. |
-| **Transformers** | NLP / Sentiment | Leverages state-of-the-art BERT/RoBERTa models for high-accuracy text analysis. |
-| **PostgreSQL** | Primary Database | Ensures ACID-compliant storage for historical features and model metadata. |
-| **Redis** | Caching & State | Facilitates rapid data access for the inference service and scheduler tasks. |
-| **Docker** | Containerization | Guarantees environment parity across development, testing, and production. |
-| **Optuna** | Hyperparameter Tuning | Automates the optimization of model parameters to maximize predictive accuracy. |
+| **FastAPI** | Backend API Framework | Offers exceptional performance, asynchronous support, and automatic OpenAPI documentation. |
+| **PyTorch / TensorFlow** | ML Core & NLP | Provides the deep learning infrastructure required for LSTM models and NLP sentiment analysis. |
+| **XGBoost** | Tabular Modeling | Industry-leading performance for structured data classification and regression. |
+| **PostgreSQL** | Primary Database | Relational integrity for storing historical features, model metadata, and training rows. |
+| **Redis** | Caching & State | Ensures low-latency access to real-time features and inference results. |
+| **Optuna** | Hyperparameter Tuning | Automated optimization to find the most efficient model configurations. |
+| **Docker** | Containerization | Guarantees reproducibility and simplifies cross-platform deployment. |
 
 ---
 
 ## 📁 Project Structure
 
 ```
-axrylic-ice-Helios-ML-Engine/
-├── 📄 Dockerfile                    # Containerization configuration
-├── 📄 README.md                      # Project documentation
-├── 📄 requirements.txt               # Python dependency manifest
-├── 📁 app/                           # FastAPI Application Layer
-│   ├── 📄 main.py                    # API Entry point
-│   ├── 📁 api/                       # REST Route definitions
-│   │   └── 📄 routes.py              # API endpoints (GET /)
-│   ├── 📁 core/                      # Core system utilities
-│   │   ├── 📄 config.py              # System configuration management
-│   │   └── 📄 logger.py              # Standardized logging service
-│   ├── 📁 models/                    # Pydantic data schemas
-│   │   └── 📄 schemas.py             # Request/Response models
-│   ├── 📁 services/                  # Business logic layer
-│   │   ├── 📄 decision_engine.py      # Trade logic and sizing
-│   │   ├── 📄 feature_builder.py     # Real-time feature construction
-│   │   └── 📄 inference_service.py   # Model prediction orchestration
-│   └── 📁 utils/                     # Application helpers
-│       └── 📄 helpers.py             # General utility functions
-├── 📁 configs/                       # Configuration files
-│   └── 📄 settings.yaml              # Application & Model settings
-├── 📁 data_ingestion/                # External Data Acquisition
-│   ├── 📁 apis/                      # API Connectors
-│   │   ├── 📄 bayse_api.py           # Bayse events integration
-│   │   ├── 📄 eia_api.py             # Energy Information Admin data
-│   │   ├── 📄 fixer_api.py           # Official FX rate integration
-│   │   ├── 📄 news_api.py            # Global news data fetcher
-│   │   └── 📄 polymarket_api.py      # Prediction market analytics
-│   ├── 📁 scheduler/                 # Task Scheduling
-│   │   └── 📄 jobs.py                # Data collection job definitions
-│   └── 📁 scrapers/                  # Web Scraping
-│       └── 📄 nairatoday_scraper.py   # Unofficial market rate extractor
-├── 📁 ml/                            # Machine Learning Core
-│   ├── 📁 db/                        # ML Persistence Layer
-│   │   ├── 📄 database.py            # Connection management
-│   │   ├── 📄 models.py              # Feature database models
-│   │   ├── 📄 repository.py          # Data access patterns
-│   │   └── 📄 store.py               # Feature store implementation
-│   ├── 📁 filters/                   # Data Cleaning & Signal Extraction
-│   │   ├── 📄 bayse_filter.py        # Bayse signal processing
-│   │   ├── 📄 eia_filter.py          # Oil/Energy macro filtering
-│   │   ├── 📄 fx_filter.py           # Currency pair relevance filtering
-│   │   ├── 📄 news_filter.py         # Macro-relevant news extraction
-│   │   └── 📄 polymarket_filter.py   # Prediction volume/prob filtering
-│   ├── 📁 models/                    # Model Architectures
-│   │   ├── 📄 calibrator.py          # Probability calibration
-│   │   ├── 📄 feature_db.py          # SQLite/Relational feature tracking
-│   │   ├── 📄 interpreter.py         # Model explainability suite
-│   │   ├── 📄 meta_learner.py        # Ensemble synthesis model
-│   │   ├── 📄 pipeline.py            # End-to-end ML pipeline
-│   │   ├── 📄 scaler.py              # Data scaling utilities
-│   │   ├── 📄 train_lstm.py          # Sequence model implementation
-│   │   ├── 📄 train_xgboost.py       # Gradient boosting implementation
-│   │   └── 📁 weights/               # Serialized model artifacts (.keras, .json, .pkl)
-│   ├── 📁 pipelines/                 # Workflow Orchestration
-│   │   ├── 📄 data_ingestion.py      # Raw data ingestion flow
-│   │   ├── 📄 evaluation.py          # Metrics and performance tracking
-│   │   ├── 📄 feature_engineering.py # Signal transformation logic
-│   │   ├── 📄 normalizer.py          # Scaling and normalization
-│   │   ├── 📄 runtime.py             # Live execution environment
-│   │   └── 📄 walk_forward.py        # Backtesting engine
-│   └── 📁 registry/                  # Model Governance
-│       └── 📄 model_registry.py      # Versioning and storage logic
-├── 📁 nlp/                           # Natural Language Processing
-│   ├── 📄 preprocessing.py           # Text cleaning and tokenization
-│   └── 📄 sentiment.py               # News sentiment aggregation
-├── 📁 scripts/                       # Operational Scripts
-│   ├── 📄 backfill.py                # Historical data population
-│   ├── 📄 run_inference.py           # Live system execution
-│   └── 📄 run_training.py            # Model training entry point
-└── 📁 tests/                         # Quality Assurance
-    ├── 📄 test_pipeline.py           # End-to-end integration tests
-    └── 📄 test_filters.py            # Unit tests for data filters
+Fotuna-FX-Engine/
+├── 📄 Dockerfile                  # Container definition for production deployment
+├── 📄 requirements.txt            # Project dependencies (FastAPI, PyTorch, XGBoost, etc.)
+├── 📂 app/                        # Main API Application layer
+│   ├── 📄 main.py                 # FastAPI entry point & health check
+│   ├── 📂 api/                    # API Route definitions
+│   │   └── 📄 routes.py           # Endpoints for system status and decisions
+│   └── 📂 services/               # Business logic providers
+│       ├── 📄 feature_builder.py  # Constructs inference-ready feature sets
+│       ├── 📄 decision_engine.py  # Logic for final market decisions
+│       └── 📄 inference_service.py # Orchestrates live model predictions
+├── 📂 ml/                         # Machine Learning Core
+│   ├── 📂 models/                 # Model architectures & weights
+│   │   ├── 📄 meta_learner.py     # Aggregator for multi-model outputs
+│   │   ├── 📄 train_lstm.py       # Sequence-based neural network logic
+│   │   ├── 📄 train_xgboost.py    # Gradient boosting model logic
+│   │   └── 📂 weights/            # Pre-trained model artifacts (.keras, .json, .pkl)
+│   ├── 📂 pipelines/              # Data processing & training workflows
+│   │   ├── 📄 pipeline.py         # Main training and inference pipeline
+│   │   ├── 📄 feature_engineering.py # Logic for market expectations & macro signals
+│   │   ├── 📄 walk_forward.py     # Backtesting validation engine
+│   │   └── 📄 normalizer.py       # Data scaling and cleaning utilities
+│   ├── 📂 filters/                # Data-source specific cleaners
+│   │   ├── 📄 fx_filter.py        # Focuses on USD/NGN and relevant pairs
+│   │   └── 📄 eia_filter.py       # Processes energy and oil market signals
+│   ├── 📂 data/                   # Data storage (Raw & Processed)
+│   │   ├── 📂 raw/                # Original datasets (Oil, FX, GDELT)
+│   │   └── 📂 features/           # Engineered feature sets
+│   └── 📂 db/                     # ML-specific storage logic
+│       ├── 📄 repository.py       # CRUD operations for feature rows
+│       └── 📄 store.py            # High-level feature storage interface
+├── 📂 data_ingestion/             # External Data Acquisition
+│   ├── 📂 apis/                   # Connectors for external providers
+│   │   ├── 📄 fixer_api.py        # FX rate procurement
+│   │   └── 📄 news_api.py         # News metadata fetching
+│   ├── 📂 scrapers/               # Web scraping utilities
+│   │   └── 📄 nairatoday_scraper.py # Parallel market data extraction
+│   └── 📂 scheduler/              # Automated job management
+│       └── 📄 jobs.py             # Periodic data collection tasks
+├── 📂 nlp/                        # Natural Language Processing
+│   ├── 📄 sentiment.py            # News sentiment aggregation
+│   └── 📄 preprocessing.py        # Text cleaning and tokenization
+├── 📂 scripts/                    # Operational Utilities
+│   ├── 📄 run_training.py         # Model training entry point
+│   └── 📄 run_inference.py        # Live system execution script
+└── 📂 tests/                      # Comprehensive Test Suite
+    ├── 📄 test_pipeline.py        # Integration tests for ML workflows
+    └── 📄 test_filters.py         # Unit tests for data filtering logic
 ```
 
 ---
@@ -167,107 +145,100 @@ axrylic-ice-Helios-ML-Engine/
 ## 🚀 Getting Started
 
 ### Prerequisites
-To run the Fotuna FX Engine, ensure your environment meets the following requirements:
-*   **Python:** 3.10 or higher
-*   **Package Manager:** `pip`
-*   **Database:** PostgreSQL 14+ (for feature storage)
-*   **Cache:** Redis 6+ (for session and real-time data)
-*   **Containerization:** Docker (optional but recommended)
+- **Python 3.10+**
+- **Pip** (Python Package Manager)
+- **PostgreSQL** (Active instance for data persistence)
+- **Redis** (Active instance for caching)
+- **Docker** (Optional, for containerized execution)
 
 ### Installation
 
-1.  **Clone the Repository**
-    ```bash
-    git clone https://github.com/axrylic-ice/Helios-ML-Engine.git
-    cd axrylic-ice-Helios-ML-Engine
-    ```
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/axrylic-ice/Helios-ML-Engine.git
+   cd Helios-ML-Engine
+   ```
 
-2.  **Create a Virtual Environment**
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows: venv\Scripts\activate
-    ```
+2. **Set Up Virtual Environment**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
-3.  **Install Dependencies**
-    ```bash
-    pip install -r requirements.txt
-    ```
+3. **Install Dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-4.  **Database Setup**
-    Ensure your PostgreSQL and Redis services are running. The system will use the configurations defined in `configs/settings.yaml`.
-
-5.  **Initialize the Environment**
-    ```bash
-    # Run the backfill script to populate initial historical data
-    python scripts/backfill.py
-    ```
+4. **Initialize Database**
+   Ensure your PostgreSQL and Redis services are running. The system will create necessary tables upon the first run of the training script.
 
 ---
 
 ## 🔧 Usage
 
-### Running the API
-The core interaction point for external services is the FastAPI server.
+### 1. Data Backfilling
+Before training, populate the system with historical data:
 ```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+python scripts/backfill.py
 ```
-Once running, you can access the API documentation at `http://localhost:8000/docs`.
 
-### Training the Models
-To retrain the LSTM, XGBoost, and Meta-Learner models on the latest ingested data:
+### 2. Model Training
+Train the ensemble (LSTM, XGBoost, and Meta-Learner) using the provided training script. This script handles feature engineering, scaling, and model persistence:
 ```bash
 python scripts/run_training.py
 ```
-This script will:
-1.  Load data from the feature store.
-2.  Perform walk-forward validation splits.
-3.  Optimize hyperparameters using Optuna.
-4.  Save the latest weights to `ml/models/weights/`.
 
-### Executing Live Inference
-For continuous monitoring and decision generation, use the live system script:
+### 3. Running the API Service
+Start the FastAPI server to expose endpoints for inference and system monitoring:
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+*Access the interactive API docs at `http://localhost:8000/docs`*
+
+### 4. Live Inference
+To run the system in a continuous loop, fetching new features and generating decisions:
 ```bash
 python scripts/run_inference.py
 ```
-This will trigger the full pipeline: Ingestion -> Filtering -> Engineering -> Prediction -> Decision.
 
-### API Endpoints
-*   **GET `/`**: Health check and system status.
-*   **POST `/api/v1/decision`**: (Supported via `routes.py`) Returns a synthesized FX decision based on current market features.
+### Available Endpoints
+- `GET /`: Health check and system status.
+- `GET /api/decision`: (Implementation in `routes.py`) Retrieve the latest market decision and position sizing.
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions to improve the Fotuna FX Decision Intelligence Engine! Your input helps make this project a more robust tool for the global finance community.
+We welcome contributions to improve the Fotuna FX Engine! Whether it's optimizing model performance or adding new data sources, your help is appreciated.
 
 ### How to Contribute
 
-1. **Fork the repository** - Click the 'Fork' button at the top right of this page.
+1. **Fork the repository** - Click the 'Fork' button at the top right.
 2. **Create a feature branch** 
    ```bash
-   git checkout -b feature/amazing-feature
+   git checkout -b feature/improved-sentiment-analysis
    ```
-3. **Make your changes** - Improve code, documentation, or model architectures.
-4. **Test thoroughly** - Ensure all functionality works by running existing tests.
+3. **Make your changes** - Ensure code follows existing styles.
+4. **Test thoroughly** - Run the test suite:
    ```bash
    pytest tests/
    ```
-5. **Commit your changes** - Write clear, descriptive commit messages.
+5. **Commit your changes**
    ```bash
-   git commit -m 'Add: Implementation of new macro signal filter for central bank data'
+   git commit -m 'Add: Integration for new Macro-API source'
    ```
 6. **Push to your branch**
    ```bash
-   git push origin feature/amazing-feature
+   git push origin feature/improved-sentiment-analysis
    ```
-7. **Open a Pull Request** - Submit your changes for review by the maintainers.
+7. **Open a Pull Request** - Describe your changes in detail.
 
-### Development Guidelines
-- ✅ Follow PEP 8 style guides for Python code.
-- 📝 Document all new functions and classes (even if the current codebase is light on docstrings).
-- 🧪 Add unit tests in the `tests/` directory for any new filters or pipelines.
-- 🔄 Maintain backward compatibility with the existing `FeatureRow` and `FeatureStore` schemas.
+### Ideas for Contributions
+- 🧪 **Testing:** Expand coverage in `test_pipeline.py`.
+- ✨ **New Filters:** Add filters for additional commodity markets (e.g., Gold).
+- ⚡ **Performance:** Optimize the `FeatureEngine` for faster processing of large CSVs.
+- 📖 **Documentation:** Add more detailed tutorials for individual model training.
 
 ---
 
@@ -276,11 +247,15 @@ We welcome contributions to improve the Fotuna FX Decision Intelligence Engine! 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for complete details.
 
 ### What this means:
-- ⚠️ **Liability:** The software is provided "as is", without warranty. Predictive models involve financial risk; use responsibly.
+- ✅ **Commercial use:** You can use this project commercially.
+- ✅ **Modification:** You can modify the code to suit your needs.
+- ✅ **Distribution:** You can distribute this software.
+- ✅ **Private use:** You can use this project privately.
+- ⚠️ **Liability:** The software is provided "as is", without warranty.
 
 ---
 
-<p align="center">Made with ❤️ by the Helios Engineering Team</p>
+<p align="center">Made with ❤️ by the Fotuna FX Team</p>
 <p align="center">
   <a href="#">⬆️ Back to Top</a>
 </p>
