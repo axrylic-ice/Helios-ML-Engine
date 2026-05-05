@@ -1,7 +1,10 @@
 import requests
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 URL = "https://api.exchangerate.host/live"
-API_KEY = "a1b8e00028a9947d66223b9f97b304f7"
+API_KEY = os.getenv("FIXER_API_KEY")
 
 store = None  # global shared state
 

@@ -1,8 +1,12 @@
 import requests
 from datetime import datetime, timedelta
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 url = "https://api.eia.gov/v2/petroleum/pri/spt/data/"
-API_KEY = "1KhZktcBp8g8yfJ910kv6NwxpU60E4buJEdKrgGy"  # rotate this later
+API_KEY = os.getenv("EIA_API_KEY")  # rotate this later
 
 def get_oil_data():
 

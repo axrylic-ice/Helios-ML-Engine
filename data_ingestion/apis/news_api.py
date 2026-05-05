@@ -1,7 +1,10 @@
 import requests
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-NEWSDATA_KEY = "pub_e22c3bae89b2437c83541051b36be701"
-CURRENTS_KEY = "JQFdwt-vDePMQM-w_aNt8CBq70Xg7BOmGmqd9rH4CUwlpHTQ"
+NEWSDATA_KEY = os.getenv("NEWS_API_KEY")
+CURRENTS_KEY = os.getenv("CURRENTS_API_KEY")
 
 
 def fetch_newsdata(query):
